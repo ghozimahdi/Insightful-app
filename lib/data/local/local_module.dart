@@ -1,14 +1,14 @@
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:injectable/injectable.dart';
-import 'package:path_provider/path_provider.dart';
+
+import '../model/daily_summary_object.dart';
 
 @module
 abstract class LocalModule {
   @preResolve
-  @lazySingleton
-  Future<Box> get boxHive async {
-    final currentDirectory = await getApplicationDocumentsDirectory();
-    Hive.init(currentDirectory.path);
-    return Hive.openBox('localData');
+  Future<HiveInterface> get hive async {
+    await Hive.initFlutter();
+    Hive.registerAdapter(DailySummaryObjectAdapter());
+    return Hive;
   }
 }

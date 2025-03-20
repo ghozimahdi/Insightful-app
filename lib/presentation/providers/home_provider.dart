@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:injectable/injectable.dart';
 
-import '../screens/logged_in/home_tabs/main_screen.dart';
-import '../screens/logged_in/home_tabs/second_screen.dart';
+import '../screens/dashboard/home_tabs/main_screen.dart';
+import '../screens/dashboard/home_tabs/second_screen.dart';
 
 enum AppScreen {
   MAIN,

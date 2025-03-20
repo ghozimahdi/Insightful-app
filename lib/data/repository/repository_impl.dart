@@ -1,24 +1,25 @@
 import 'package:injectable/injectable.dart';
 
-import '../../domain/models/location_model.dart';
+import '../../domain/models/daily_summary_model.dart';
+import '../../domain/models/geo_fence_summary.dart';
 import '../../domain/repository/repository.dart';
 import '../data_sources/local_data_source.dart';
-import '../data_sources/location_data_source.dart';
-import '../mappers/location_dto_mapper.dart';
-import '../mappers/location_model_mapper.dart';
+import '../mappers/daily_summary_model_mapper.dart';
+import '../mappers/daily_summary_object_mapper.dart';
+import '../mappers/geo_fence_summary_data_mapper.dart';
 
-@Injectable(as: Repository)
+@LazySingleton(as: Repository)
 class RepositoryImpl extends Repository {
   final LocalDataSource localDataSource;
-  final LocationDataSource locationDataSource;
-  final LocationDtoMapper locationDtoMapper;
-  final LocationModelMapper locationModelMapper;
+  final GeoFenceSummaryDataMapper geoFenceSummaryDataMapper;
+  final DailySummaryObjectMapper dailySummaryObjectMapper;
+  final DailySummaryModelMapper dailySummaryModelMapper;
 
   RepositoryImpl(
     this.localDataSource,
-    this.locationDataSource,
-    this.locationDtoMapper,
-    this.locationModelMapper,
+    this.geoFenceSummaryDataMapper,
+    this.dailySummaryObjectMapper,
+    this.dailySummaryModelMapper,
   );
 
   @override
@@ -27,34 +28,17 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<LocationModel> getCurrentLocation() async {
-    try {
-      final result = await locationDataSource.getCurrentLocation();
-      return locationModelMapper.mapFromData(result);
-    } catch (e) {
-      rethrow;
-    }
+  Future<void> addDailySummary(GeoFenceSummary model) {
+    final data = geoFenceSummaryDataMapper.mapFromDomain(model);
+    final dataObject = dailySummaryObjectMapper.mapFromDomain(data);
+    return localDataSource.addDailySummary(dataObject);
   }
 
   @override
-  Future<LocationModel> getLastSavedLocation() async {
-    try {
-      final result = await localDataSource.getLastSavedLocation();
-      return locationModelMapper.mapFromData(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @override
-  void updateLastSavedLocation(LocationModel model) {
-    final dto = locationDtoMapper.mapFromDomain(model);
-    localDataSource.updateLastSavedLocation(dto);
-  }
-
-  @override
-  Future<void> updateLocationOnMap(double lat, double lng) {
-    //TODO update my location on the server
-    throw UnimplementedError();
+  Future<List<DailySummaryModel>> getDailySummaries() async {
+    final dailySummaries = await localDataSource.getDailySummaries();
+    return dailySummaries
+        .map((e) => dailySummaryModelMapper.mapFromObject(e))
+        .toList();
   }
 }

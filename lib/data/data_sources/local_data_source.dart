@@ -1,23 +1,21 @@
 import 'package:hive/hive.dart';
 import 'package:injectable/injectable.dart';
 
-import '../model/location_dto.dart';
+import '../model/daily_summary_object.dart';
 
 abstract class LocalDataSource {
-  Future<LocationDto?> getLastSavedLocation();
-
-  void updateLastSavedLocation(LocationDto data);
-
   void clearData();
+
+  Future<void> addDailySummary(DailySummaryObject data);
+
+  Future<List<DailySummaryObject>> getDailySummaries();
 }
 
-@Injectable(as: LocalDataSource)
+@LazySingleton(as: LocalDataSource)
 class LocalDataSourceImpl extends LocalDataSource {
-  final Box localBox;
-
-  LocalDataSourceImpl(this.localBox);
-
-  static const lastUpdatedLocationKey = 'lastUpdatedLocation';
+  Future<Box<DailySummaryObject>> _getDailySummaryBox() async {
+    return Hive.openBox<DailySummaryObject>('daily_summary_box');
+  }
 
   @override
   void clearData() {
@@ -25,17 +23,14 @@ class LocalDataSourceImpl extends LocalDataSource {
   }
 
   @override
-  Future<LocationDto?> getLastSavedLocation() async {
-    if (!localBox.containsKey(lastUpdatedLocationKey)) {
-      return null;
-    }
-
-    final lastUpdatedLocation = localBox.get(lastUpdatedLocationKey);
-    return LocationDto.fromJson(lastUpdatedLocation);
+  Future<void> addDailySummary(DailySummaryObject data) async {
+    final box = await _getDailySummaryBox();
+    box.add(data);
   }
 
   @override
-  void updateLastSavedLocation(LocationDto data) {
-    localBox.put(lastUpdatedLocationKey, data.toJson());
+  Future<List<DailySummaryObject>> getDailySummaries() async {
+    final box = await _getDailySummaryBox();
+    return box.values.toList();
   }
 }

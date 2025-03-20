@@ -1,16 +1,10 @@
-import '../models/location_model.dart';
+import '../models/daily_summary_model.dart';
+import '../models/geo_fence_summary.dart';
 
 abstract class Repository {
-  Future<LocationModel> getLastSavedLocation();
-
-  void updateLastSavedLocation(LocationModel model);
-
   void clearData();
 
-  Future<LocationModel> getCurrentLocation();
+  Future<void> addDailySummary(GeoFenceSummary model);
 
-  Future<void> updateLocationOnMap(
-    double lat,
-    double lng,
-  );
+  Future<List<DailySummaryModel>> getDailySummaries();
 }

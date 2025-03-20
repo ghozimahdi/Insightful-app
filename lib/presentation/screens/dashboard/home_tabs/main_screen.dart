@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../data/services/location_tracking_service.dart';
+import '../../../../domain/models/geo_fence_type.dart';
 import '../../../../gen/colors.gen.dart';
-import '../../../../injector.dart';
-import '../../../providers/tracking_provider.dart';
+import '../../../providers/main_screen_provider.dart';
+import '../../../util/duration_formatter_mixin.dart';
 import '../../../util/extensions/datetime_extensions.dart';
+import '../../../util/permission_helper.dart';
 import '../../../util/theme.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends StatelessWidget with DurationFormatterMixin {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  final _service = getIt<LocationTrackingService>();
-
-  @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<TrackingProvider>(context);
+    final provider = Provider.of<MainScreenProvider>(context);
+    final summary = provider.geoFenceSummary;
+    final timeAgo = summary.clockInTime.timeAgo;
+    final geoFenceType = summary.type.label;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,30 +42,18 @@ class _MainScreenState extends State<MainScreen> {
                   style: theme.textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
-                ValueListenableBuilder<String>(
-                  valueListenable: _service.elapsedNotifier,
-                  builder: (context, elapsed, _) {
-                    return Text(
-                      elapsed,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 40,
-                      ),
-                      textAlign: TextAlign.center,
-                    );
-                  },
+                Text(
+                  provider.geoFenceSummary.elapsed,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 40,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                ValueListenableBuilder<Position?>(
-                  valueListenable: _service.currentPositionNotifier,
-                  builder: (context, position, _) {
-                    final startedAt = _service.clockInTime.timeAgo;
-
-                    return Text(
-                      'Started at $startedAt | Current Location: ${_service.currentLocation}',
-                      style: theme.textTheme.titleLarge,
-                      textAlign: TextAlign.center,
-                    );
-                  },
+                Text(
+                  'Started at $timeAgo | Current Location: $geoFenceType',
+                  style: theme.textTheme.titleLarge,
+                  textAlign: TextAlign.center,
                 ),
                 FilledButton(
                   style: FilledButton.styleFrom(
@@ -76,10 +61,19 @@ class _MainScreenState extends State<MainScreen> {
                         ? AppColors.orange.shade900
                         : Colors.black,
                   ),
-                  onPressed: provider.isTracking
-                      ? provider.stopTracking
-                      : provider.startTracking,
-                  child: Text(provider.isTracking ? 'Clock Out' : 'Clock In'),
+                  onPressed: () => context.requestPermissions(
+                    permissions: [
+                      Permission.locationWhenInUse,
+                      Permission.locationAlways,
+                      Permission.location,
+                    ],
+                    onGrantedCallback: provider.isTracking
+                        ? provider.clockOut
+                        : provider.clockIn,
+                  ),
+                  child: Text(
+                    provider.isTracking ? 'Clock Out' : 'Clock In',
+                  ),
                 ),
               ],
             ),
@@ -106,19 +100,19 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                     Text(
-                      'Home: ${provider.currentSummary!.homeSeconds ~/ 60} min',
+                      'Home: ${formatToHourMinute(summary.homeSeconds)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      'Office: ${provider.currentSummary!.officeSeconds ~/ 60} min',
+                      'Office: ${formatToHourMinute(summary.officeSeconds)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      'Traveling: ${provider.currentSummary!.travelingSeconds ~/ 60} min',
+                      'Traveling: ${formatToHourMinute(summary.travelingSeconds)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),

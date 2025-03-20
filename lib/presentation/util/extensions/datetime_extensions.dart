@@ -1,12 +1,15 @@
 import 'package:intl/intl.dart';
 
 extension DateTimeEx on DateTime {
-  String get formattedString => '$day/$month/$year ${toString().substring(11, 19)}';
+  String get formattedString =>
+      '$day/$month/$year ${toString().substring(11, 19)}';
 
   String get daysAgo {
     final now = DateTime.now();
     final period = now.difference(this);
-    return period.inDays == 0 ? "today at $hour:${minute > 9 ? minute : '0$minute'}" : '${period.inDays} days old';
+    return period.inDays == 0
+        ? "today at $hour:${minute > 9 ? minute : '0$minute'}"
+        : '${period.inDays} days old';
   }
 
   bool isSameDate(DateTime other) {
@@ -61,7 +64,13 @@ extension DateTimeEx on DateTime {
     final date = this;
     final dayOfMonth = date.day.toString();
     final monthString = getMonthString(date.month).substring(0, 3);
-    final dayTermination = dayOfMonth == '1' ? 'st' : dayOfMonth == '2' ? 'nd' : dayOfMonth == '3' ? 'rd' : 'th';
+    final dayTermination = dayOfMonth == '1'
+        ? 'st'
+        : dayOfMonth == '2'
+            ? 'nd'
+            : dayOfMonth == '3'
+                ? 'rd'
+                : 'th';
     return '$monthString $dayOfMonth$dayTermination';
   }
 

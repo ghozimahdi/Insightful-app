@@ -5,6 +5,7 @@ import '../../../gen/assets.gen.dart';
 import '../../../gen/colors.gen.dart';
 import '../../../injector.dart';
 import '../../providers/home_provider.dart';
+import '../../providers/main_screen_provider.dart';
 import '../../util/theme.dart';
 
 class Dashboard extends StatefulWidget {
@@ -24,8 +25,13 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => getIt<HomeProvider>(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => getIt<HomeProvider>()),
+        ChangeNotifierProvider(
+          create: (_) => getIt<MainScreenProvider>()..init(),
+        ),
+      ],
       child: Consumer<HomeProvider>(
         builder: (_, homeProvider, __) {
           return Scaffold(
