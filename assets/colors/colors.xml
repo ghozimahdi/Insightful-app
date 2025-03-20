@@ -7,5 +7,7 @@
     <color name="darkGrey">#1F1F1F</color>
     <color name="lightGrey">#F2F4F7</color>
     <color name="red">#F04438</color>
+
+    <color name="orange" type="material">#FFBA00</color>
 </resources>
 

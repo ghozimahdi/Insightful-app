@@ -50,6 +50,7 @@ This project follows Clean Architecture principles:
 2. Install dependencies:
    ```bash
    flutter pub get
+   dart pub run build_runner build -d
    ```
 3. Set up environment variables:
    - Copy `config.env.example` to `config.env`
