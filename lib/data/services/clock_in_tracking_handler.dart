@@ -45,55 +45,59 @@ class ClockInTrackingHandler extends TaskHandler with GeoFenceEvaluator {
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    _clockInTime = DateTime.now();
+    try {
+      _clockInTime = DateTime.now();
 
-    _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 50,
-      ),
-    ).listen((position) {
-      _lastPosition = position;
-    });
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final geoFenceType = evaluateLocation(
-        PositionModel(
-          latitude: _lastPosition?.latitude ?? 0,
-          longitude: _lastPosition?.longitude ?? 0,
+      _positionSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          distanceFilter: 50,
         ),
-        _geoFences,
-      );
+      ).listen((position) {
+        _lastPosition = position;
+      });
 
-      switch (geoFenceType) {
-        case GeoFenceType.home:
-          _homeSeconds++;
-          break;
-        case GeoFenceType.office:
-          _officeSeconds++;
-          break;
-        default:
-          _travelingSeconds++;
-          break;
-      }
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        final geoFenceType = evaluateLocation(
+          PositionModel(
+            latitude: _lastPosition?.latitude ?? 0,
+            longitude: _lastPosition?.longitude ?? 0,
+          ),
+          _geoFences,
+        );
 
-      final elapsed = DateTime.now().difference(_clockInTime!);
-      FlutterForegroundTask.updateService(
-        notificationTitle: 'Clocked In',
-        notificationText: _formatDuration(elapsed),
-      );
+        switch (geoFenceType) {
+          case GeoFenceType.home:
+            _homeSeconds++;
+            break;
+          case GeoFenceType.office:
+            _officeSeconds++;
+            break;
+          default:
+            _travelingSeconds++;
+            break;
+        }
 
-      final summary = GeoFenceSummaryData(
-        homeSeconds: _homeSeconds,
-        officeSeconds: _officeSeconds,
-        travelingSeconds: _travelingSeconds,
-        elapsed: _formatDuration(elapsed),
-        type: geoFenceType.label,
-        clockInTime: _clockInTime,
-      );
+        final elapsed = DateTime.now().difference(_clockInTime!);
+        FlutterForegroundTask.updateService(
+          notificationTitle: 'Clocked In',
+          notificationText: _formatDuration(elapsed),
+        );
 
-      FlutterForegroundTask.sendDataToMain(summary.toJson());
-    });
+        final summary = GeoFenceSummaryData(
+          homeSeconds: _homeSeconds,
+          officeSeconds: _officeSeconds,
+          travelingSeconds: _travelingSeconds,
+          elapsed: _formatDuration(elapsed),
+          type: geoFenceType.label,
+          clockInTime: _clockInTime,
+        );
+
+        FlutterForegroundTask.sendDataToMain(summary.toJson());
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   @override
