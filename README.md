@@ -2,7 +2,9 @@
 
 This project serves as a training example for new developers, demonstrating clean architecture principles in a Flutter application using the Provider pattern for state management.
 
-[![Watch the video](https://img.youtube.com/vi/8r5tRvNqxEw/maxresdefault.jpg)]([https://youtu.be/8r5tRvNqxEw](https://www.youtube.com/watch?v=8r5tRvNqxEw))
+## Demo Video
+
+[![Watch the video](https://img.youtube.com/vi/8r5tRvNqxEw/maxresdefault.jpg)](https://www.youtube.com/watch?v=8r5tRvNqxEw)
 
 
 ## Project Structure
